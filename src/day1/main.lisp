@@ -9,7 +9,9 @@
     (let ((lst '()))
       (loop for line = (read-line in nil :eof)
             until (eq line :eof)
-            do (setf lst (append lst (cons (parse-int line) nil))))
+            do (setf lst
+                     (append lst
+                             (cons (parse-int line) nil))))
       lst)))
 
 (defun count-incr (lst)
