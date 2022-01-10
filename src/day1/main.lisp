@@ -4,11 +4,6 @@
 
 (in-package :aoc2021.day1)
 
-;; (with-open-file (stream "/etc/passwd")
-;;   (loop for line = (read-line stream nil 'foo)
-;;    until (eq line 'foo)
-;;    do (print line)))
-
 (defun parse-input (filename)
   (with-open-file (in filename :direction :input)
     (let ((lst '()))
