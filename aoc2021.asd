@@ -5,8 +5,7 @@
   :depends-on ()
   :components ((:module "src"
                 :components
-                ((:file "main")
-                 (:module "day1"
+                ((:module "day1"
                   :components
                   ((:file "main"))))))
   :description "advent of code 2021"
