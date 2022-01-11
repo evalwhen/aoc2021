@@ -10,6 +10,8 @@
 (defparameter +depth+ 0)
 (defparameter +distance+ 0)
 
+;; oop version
+;; TODO: functionnal version
 (defclass command ()
   ((value
     :initarg :value
