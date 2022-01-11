@@ -1,5 +1,6 @@
 (defpackage aoc2021.util
-  (:use :cl))
+  (:use :cl)
+  (:export :parse-input))
 
 (in-package :aoc2021.util)
 

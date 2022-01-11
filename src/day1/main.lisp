@@ -1,19 +1,21 @@
 (defpackage aoc2021.day1
   (:use :cl)
   (:export :puzzle1
-           :puzzle2))
+   :puzzle2)
+  (:import-from :aoc2021.util
+                :parse-input))
 
 (in-package :aoc2021.day1)
 
-(defun parse-input (filename)
-  (with-open-file (in filename :direction :input)
-    (let ((lst '()))
-      (loop for line = (read-line in nil :eof)
-            until (eq line :eof)
-            do (setf lst
-                     (append lst
-                             (cons (parse-int line) nil))))
-      lst)))
+;; (defun parse-input (filename)
+;;   (with-open-file (in filename :direction :input)
+;;     (let ((lst '()))
+;;       (loop for line = (read-line in nil :eof)
+;;             until (eq line :eof)
+;;             do (setf lst
+;;                      (append lst
+;;                              (cons (parse-int line) nil))))
+;;       lst)))
 
 (defun count-incr (lst)
   (labels ((help (leader lst count)
@@ -58,10 +60,10 @@
     (help lst nil)))
 
 (defun puzzle1 ()
-  (let ((input (parse-input "input1.txt")))
+  (let ((input (parse-input "input1.txt" #'parse-int)))
     (count-incr input)))
 
 (defun puzzle2 ()
-  (let* ((input (parse-input "input2.txt"))
+  (let* ((input (parse-input "input2.txt" #'parse-int))
          (triples (sum-triple (group-triple input))))
     (count-incr triples)))
