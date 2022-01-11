@@ -2,7 +2,7 @@
   :version "0.1.0"
   :author "melp"
   :license ""
-  :depends-on ()
+  :depends-on (:aoc2021-util)
   :components ((:module "src"
                 :components
                 ((:module "day1"
