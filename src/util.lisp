@@ -1,6 +1,7 @@
 (defpackage aoc2021.util
   (:use :cl)
-  (:export :parse-input))
+  (:export :parse-input
+           :parse-int))
 
 (in-package :aoc2021.util)
 
@@ -13,3 +14,7 @@
                      (append lst
                              (cons (funcall line-parser line) nil))))
       lst)))
+
+(defun parse-int (str)
+  (handler-case (parse-integer str)
+    (sb-int:simple-parse-error () 0)))

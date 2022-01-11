@@ -3,7 +3,8 @@
   (:export :puzzle1
    :puzzle2)
   (:import-from :aoc2021.util
-                :parse-input))
+                :parse-input
+                :parse-int))
 
 (in-package :aoc2021.day1)
 
@@ -26,10 +27,6 @@
     (if (null lst)
         0
         (help (car lst) (cdr lst) 0))))
-
-(defun parse-int (str)
-  (handler-case (parse-integer str)
-    (sb-int:simple-parse-error () 0)))
 
 (defun group-triple (lst)
   (labels ((get-triple (lst count res)
