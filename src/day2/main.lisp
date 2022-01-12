@@ -58,7 +58,7 @@
                    +depth+)))
 
 
-(defun parse-comand (line)
+(defun parse-command (line)
   (let* ((idx (search " " line))
          (name (subseq line 0 idx))
          (value (parse-int (subseq line (incf idx)))))
@@ -67,7 +67,7 @@
       ((string= name "down") (make-instance 'down-command :value value))
       ((string= name "forward") (make-instance 'forward-command :value value)))))
 
-(defun parse-comand2 (line)
+(defun parse-command2 (line)
   (let* ((idx (search " " line))
          (name (subseq line 0 idx))
          (value (parse-int (subseq line (incf idx)))))
@@ -85,13 +85,13 @@
          (execute-commands (cdr commands))))))
 
 (defun puzzle1 ()
-  (let* ((commands (parse-input "input1.txt" #'parse-comand)))
+  (let* ((commands (parse-input "input1.txt" #'parse-command)))
     (execute-commands commands)
     (* +depth+
        +distance+)))
 
 (defun puzzle2 ()
-  (let* ((commands (parse-input "input1.txt" #'parse-comand2)))
+  (let* ((commands (parse-input "input1.txt" #'parse-command2)))
     (execute-commands commands)
     (* +depth+
        +distance+)))
