@@ -54,6 +54,7 @@
       (vector-push-extend char res))
     res))
 
+;; TODO: refactor code.
 (defun puzzle1 ()
   (parse-input "input1.txt" #'parse-line)
   (multiple-value-bind (g e) (cal-gamma-and-eplison)
