@@ -35,7 +35,7 @@
     (let ((gamma-lst nil)
           (eplison-lst nil))
       (loop
-        (multiple-value-bind (entry-p key value)
+        (multiple-value-bind (entry-p key value) ;; TODO suppress warning: key is unused
             (my-iterator)
           (if entry-p
               (multiple-value-bind (g e) (cal-most-and-least-value value)
