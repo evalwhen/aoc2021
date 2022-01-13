@@ -1,6 +1,7 @@
 (defpackage :aoc2021.day3
   (:use :cl)
-  (:export :puzzle1)
+  (:export :puzzle1
+           :puzzle2)
   (:import-from :aoc2021.util
                 :parse-input
                 :parse-int))
@@ -60,3 +61,45 @@
   (multiple-value-bind (g e) (cal-gamma-and-eplison)
     (* g e)))
 
+
+(defun split (lines i)
+  (let ((counter (make-hash-table)))
+    (dolist (line lines)
+      (setf (gethash (aref line i) counter)
+            (append (gethash (aref line i) counter)
+                    (cons line nil))))
+    (let* ((l0 (gethash #\0 counter))
+           (l1 (gethash #\1 counter))
+           (l0-len (list-length l0))
+           (l1-len (list-length l1)))
+      (cond
+        ((<= l0-len l1-len) (values l1 l0))
+        (t (values l0 l1))))))
+
+(defun cal-oxygen-rate (lines)
+  (cond
+    ((null (cdr lines)) (car lines))
+    (t (labels ((help (ls i)
+                      (multiple-value-bind (ol) (split ls i)
+                        (if (null (cdr ol))
+                            (car ol)
+                            (help ol (+ i 1))))))
+         (help lines 0)))))
+
+(defun cal-c02-rate (lines)
+  (cond
+    ((null (cdr lines)) (car lines))
+    (t (labels ((help (ls i)
+                      (multiple-value-bind (ol cl) (split ls i)
+                        (if (null (cdr cl)) ;; why (cdr nil) equal nil
+                            (car cl)
+                            (help cl (+ i 1))))))
+         (help lines 0)))))
+
+(defun puzzle2 ()
+  (let* ((lines (parse-input "input1.txt" #'(lambda (x) x)))
+         (orate-b (cal-oxygen-rate lines))
+         (crate-b (cal-c02-rate lines))
+         (orate (if (null orate-b) 0 (parse-integer orate-b :radix 2)))
+         (crate (if (null crate-b) 0 (parse-integer crate-b :radix 2))))
+    (* orate crate)))
