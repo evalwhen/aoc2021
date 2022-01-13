@@ -63,6 +63,9 @@
 
 
 (defun split (lines i)
+
+  "split lines by the 0/1 length at colum i"
+
   (let ((counter (make-hash-table)))
     (dolist (line lines)
       (setf (gethash (aref line i) counter)
