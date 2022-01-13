@@ -2,7 +2,7 @@
   (:use :cl)
   (:export :puzzle1)
   (:import-from :aoc2021.util
-   :parse-input
+                :parse-input
                 :parse-int))
 
 (in-package :aoc2021.day3)
