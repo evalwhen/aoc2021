@@ -1,6 +1,7 @@
 (defpackage :aoc2021.day4
   (:use :cl)
-  (:export :puzzle1)
+  (:export :puzzle1
+           :puzzle2)
   (:import-from :aoc2021.util
                 :parse-int))
 
@@ -9,7 +10,7 @@
 (defparameter board-size 5)
 (defparameter win-status "11111")
 
-(defstruct board content status)
+(defstruct board content status win)
 
 (defun init-status ()
   (make-array (list board-size board-size) :element-type 'character :initial-element #\0))
@@ -114,3 +115,20 @@
                 (v:info :board board)
                 (return-from puzzle1 (* (parse-integer number)
                                          (sum-unmarked board)))))))))))
+
+(defun puzzle2 ()
+  (let ((win-boards nil))
+    (multiple-value-bind (input boards) (parse-input "input2.txt")
+      (loop for number in input do
+        (loop for board in boards do
+          (unless (board-win board)
+            (multiple-value-bind (i j) (mark board number)
+              (unless (= i -1)
+                (let ((nums (check-win board i j)))
+                  (unless (null nums)
+                    (setf (board-win board) t)
+                    (setf win-boards (cons (cons number board) win-boards))))))))))
+    (if (null win-boards)
+        0
+        (* (parse-integer (car (car win-boards)))
+           (sum-unmarked (cdr (car win-boards)))))))
