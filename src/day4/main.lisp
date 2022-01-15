@@ -97,7 +97,8 @@
                                                :status
                                                (init-status))
                                    nil))))
-      (values (str:split "," input) boards))))
+      (values (str:split "," input)
+              boards))))
 
 (defun puzzle1 ()
   (multiple-value-bind (input boards) (parse-input "input2.txt")
