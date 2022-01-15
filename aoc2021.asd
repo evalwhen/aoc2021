@@ -2,7 +2,9 @@
   :version "0.1.0"
   :author "melp"
   :license ""
-  :depends-on (:aoc2021-util)
+  :depends-on (:aoc2021-util
+               :str
+               :verbose)
   :components ((:module "src"
                 :components
                 ((:module "day1"
@@ -13,6 +15,9 @@
                   ((:file "oop")
                    (:file "functional")))
                  (:module "day3"
+                  :components
+                  ((:file "main")))
+                 (:module "day4"
                   :components
                   ((:file "main"))))))
   :description "advent of code 2021"
