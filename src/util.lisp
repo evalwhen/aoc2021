@@ -18,3 +18,8 @@
 (defun parse-int (str)
   (handler-case (parse-integer str)
     (sb-int:simple-parse-error () 0)))
+
+(defmacro define-function (name lambda-list &body body)
+  `(progn
+     (export ',name)
+     (defun ,name ,lambda-list ,@body)))
