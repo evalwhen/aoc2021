@@ -1,6 +1,7 @@
 (defpackage :aoc2021.day5
   (:use :cl)
-  (:export #:puzzle1)
+  (:export #:puzzle1
+           #:puzzle2)
   (:import-from :aoc2021.util
                 :parse-input
                 :parse-int))
@@ -8,7 +9,6 @@
 (in-package :aoc2021.day5)
 
 (defparameter *delim* "->")
-(defparameter *map* (make-array '(1000 1000) :element-type 'integer))
 
 (defstruct segment x1 y1 x2 y2)
 
@@ -45,33 +45,77 @@
 (defun is-vertical (seg)
   (= (segment-x1 seg) (segment-x2 seg)))
 
-(defun start-to-end (i j)
-  (if (< i j)
-      (values i j)
-      (values j i)))
+(defun is-diagonal (seg)
+  (= (abs (- (segment-x1 seg) (segment-x2 seg)))
+     (abs (- (segment-y1 seg) (segment-y2 seg)))))
 
-(defun draw (seg)
-  (if (is-horizontal seg)
-      (multiple-value-bind (start end) (start-to-end (segment-x1 seg) (segment-x2 seg))
-        (loop for x from start below (+ end 1) do
-          (incf (aref *map* (segment-y1 seg) x))))
-      (multiple-value-bind (start end) (start-to-end (segment-y1 seg) (segment-y2 seg))
-        (loop for y from start below (+ end 1) do
-              (incf (aref *map* y (segment-x1 seg)))))))
+(defun gen-seq (s e)
+  (let ((delt (if (< s e) 1 -1)))
+    (labels ((help (s e lst)
+               (cond
+                 ((= s e) (reverse (cons e lst)))
+                 (t (help (+ s delt)
+                          e
+                          (cons s lst))))))
+      (if (= s e)
+          s
+          (help s e nil)))))
 
-(defun count-dangerous ()
+(defun gen-dots (seg)
+  (let* ((xseq (gen-seq (segment-x1 seg) (segment-x2 seg)))
+         (yseq (gen-seq (segment-y1 seg) (segment-y2 seg))))
+    (labels ((help (xs ys lst)
+               (cond
+                 ((and (listp xs) (listp ys))
+                  (cond ((null xs) lst)
+                        (t (help (cdr xs)
+                                 (cdr ys)
+                                 (append lst (cons (cons (car xs) (car ys))
+                                                   nil))))))
+                 ((and (listp xs) (numberp ys))
+                  (cond ((null xs) lst)
+                        (t (help (cdr xs)
+                                 ys
+                                 (append lst (cons (cons (car xs) ys)
+                                                   nil))))))
+                 ((and (numberp xs) (listp ys))
+                  (cond ((null ys) lst)
+                        (t (help xs
+                                  (cdr ys)
+                                  (append lst (cons (cons xs (car ys))
+                                                    nil)))))))))
+      (help xseq yseq nil))))
+
+(defun draw (seg map)
+  (let ((dots (gen-dots seg)))
+    (loop for dot in dots do
+          (incf (aref map (car dot) (cdr dot))))))
+
+(defun count-dangerous (map)
   (let ((counter 0))
     (loop for y from 0 below 1000 do
       (loop for x from 0 below 1000 do
-        (when (>= (aref *map* y x) 2)
+        (when (>= (aref map y x) 2)
           (incf counter))))
     counter))
 
 (defun puzzle1 ()
-  (let* ((segments (parse-input "input2.txt" #'parse-line))
+  (let* ((map (make-array '(1000 1000) :element-type 'integer))
+         (segments (parse-input "input2.txt" #'parse-line))
          (input (remove-if #'(lambda (seg) (not (or (is-horizontal seg)
                                                     (is-vertical seg))))
                            segments)))
     (loop for seg in input do
-      (draw seg))
-    (count-dangerous)))
+      (draw seg map))
+    (count-dangerous map)))
+
+(defun puzzle2 ()
+  (let* ((map (make-array '(1000 1000) :element-type 'integer))
+         (segments (parse-input "input2.txt" #'parse-line))
+         (input (remove-if #'(lambda (seg) (not (or (is-horizontal seg)
+                                                    (is-vertical seg)
+                                                    (is-diagonal seg))))
+                           segments)))
+    (loop for seg in input do
+      (draw seg map))
+    (count-dangerous map)))
