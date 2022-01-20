@@ -7,8 +7,6 @@
 
 (in-package :aoc2021.day6)
 
-(defparameter *counter* 0)
-
 (defun tick (lst days)
   (labels ((help (lst new-lst)
              (cond
@@ -23,7 +21,6 @@
         )))
 
 (defun puzzle1 (days)
-  (setf *counter* 0)
   (with-open-file (in "input1.txt" :direction :input)
     (let* ((line (read-line in))
            (input (get-tokens line #\, :convert #'parse-int)))
