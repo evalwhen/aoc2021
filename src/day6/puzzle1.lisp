@@ -17,12 +17,10 @@
                             (cons 8 (cons 6 new-lst))))))))
     (if (= days 0)
         lst
-        (tick (help lst nil) (decf days))
-        )))
+        (tick (help lst nil) (decf days)))))
 
 (defun puzzle1 (days)
   (with-open-file (in "input1.txt" :direction :input)
     (let* ((line (read-line in))
            (input (get-tokens line #\, :convert #'parse-int)))
-      (length (tick input days))
-      )))
+      (length (tick input days)))))
