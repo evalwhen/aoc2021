@@ -29,6 +29,9 @@
                    (:file "puzzle2")))
                  (:module "day7"
                   :components
+                  ((:file "main")))
+                 (:module "day8"
+                  :components
                   ((:file "main"))))))
   :description "advent of code 2021"
   :in-order-to ((test-op (test-op "aoc2021/tests"))))
