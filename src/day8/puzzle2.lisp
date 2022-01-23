@@ -15,22 +15,22 @@
       (setf (gethash (sort  num #'char<) *encode-digit*) (second val))
       (setf (gethash (second val) *digit-encode*) num))))
 
-(defun str-num-diff (origin target)
+(defun num-diff (origin target)
   (set-difference (coerce origin 'list)
                   (coerce target 'list)))
 
 (defun n-xs (n xs)
   (loop for x in xs
-        collect (cons (str-num-diff n x) x)))
+        collect (cons (num-diff n x) x)))
 
 (defun n9 (eight four length-6s)
-  (let* ((8-4 (str-num-diff eight four))
+  (let* ((8-4 (num-diff eight four))
          (n9 (remove-if-not #'(lambda (x) (member (car (car x)) 8-4 :test #'char=))
                             (n-xs eight length-6s))))
     (cdr (car n9))))
 
 (defun n6 (eight seven length-6s)
-  (let* ((8-7 (str-num-diff eight seven))
+  (let* ((8-7 (num-diff eight seven))
          (n6 (remove-if #'(lambda (x) (member (car (car x)) 8-7 :test #'char=))
                             (n-xs eight length-6s))))
     (cdr (car n6))))
