@@ -1,6 +1,6 @@
 (in-package :aoc2021.day8)
 
-(defparameter *encode-digit* (make-hash-table :test 'equal))
+(defvar *encode-digit* (make-hash-table :test 'equal))
 (defvar *digit-encode* (make-hash-table))
 
 (defparameter *unique-length* '((2 1)
@@ -55,8 +55,7 @@
 
 (defun scratch (nums targets)
 
-  (let (
-        ;; (*encode-digit* (make-hash-table))
+  (let ((*encode-digit* (make-hash-table :test 'equal))
         (digit 0))
       (find-1-4-7-8 nums)
       (let* ((length-6s (remove-if-not (length-p 6) nums))
