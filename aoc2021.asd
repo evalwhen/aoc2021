@@ -5,7 +5,8 @@
   :depends-on (:aoc2021-util
                :str
                :verbose
-               :for)
+               :for
+               :alexandria)
   :components ((:module "src"
                 :components
                 ((:module "day1"
