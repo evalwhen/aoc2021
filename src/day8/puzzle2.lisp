@@ -53,7 +53,7 @@
 (defun length-p (n)
   #'(lambda (num) (= (length num) n)))
 
-(defun scratch (nums targets)
+(defun decode (nums targets)
 
   (let ((*encode-digit* (make-hash-table :test 'equal))
         (digit 0))
@@ -96,4 +96,4 @@
 
 (defun puzzle2 ()
   (let* ((lss (parse-input "input2.txt" #'parse-line)))
-    (loop for ls in lss sum (scratch (car ls) (cdr ls)))))
+    (loop for ls in lss sum (decode (car ls) (cdr ls)))))
