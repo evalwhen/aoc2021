@@ -1,5 +1,7 @@
 (defpackage :aoc2021.day8
   (:use :cl)
+  (:import-from :for
+                :for)
   (:import-from :aoc2021.util
                 :parse-input
                 :get-tokens))

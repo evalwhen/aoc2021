@@ -4,7 +4,8 @@
   :license ""
   :depends-on (:aoc2021-util
                :str
-               :verbose)
+               :verbose
+               :for)
   :components ((:module "src"
                 :components
                 ((:module "day1"
@@ -32,7 +33,8 @@
                   ((:file "main")))
                  (:module "day8"
                   :components
-                  ((:file "main"))))))
+                  ((:file "puzzle1")
+                   (:file "puzzle2"))))))
   :description "advent of code 2021"
   :in-order-to ((test-op (test-op "aoc2021/tests"))))
 
