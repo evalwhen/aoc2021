@@ -35,7 +35,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define pase-input
+(define parse-input
   (lambda (input)
     (let* ([lines (string-split input "\n")]
            [matrix (make-vector (length lines))])
