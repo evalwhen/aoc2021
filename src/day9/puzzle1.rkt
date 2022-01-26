@@ -1,5 +1,53 @@
 #lang racket
 
+
+(define (neibor-pos i j)
+  `((,(sub1 i) . ,j)
+    (,(add1 i) . ,j)
+    (,i . ,(sub1 j))
+    (,i . ,(add1 j))))
+
+
+(define parse-data
+  (lambda (filename)
+    (call-with-input-file filename
+      (lambda (in)
+        (for/fold ([map (hash)])
+                  ([line (in-lines in)]
+                   [i (in-naturals 0)])
+          (for/fold ([map map])
+                    ([c (in-string line)]
+                     [j (in-naturals 0)])
+            (hash-set map (cons i j) (string->number (string c)))))))))
+
+(define (low-pos? data p)
+  (define curr (hash-ref data p #f))
+  (for/and ([pos (in-list (neibor-pos (car p) (cdr p)))])
+    (and curr (< curr (hash-ref data pos +inf.0)))))
+
+(define part1
+  (lambda (data)
+    (for*/sum ([pos (in-hash-keys data)]
+               #:when (low-pos? data pos))
+      (add1 (hash-ref data pos +inf.0)))))
+
+(part1 (parse-data "input2.txt"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define pase-input
+  (lambda (input)
+    (let* ([lines (string-split input "\n")]
+           [matrix (make-vector (length lines))])
+      (for ([line lines]
+            [i (in-naturals 0)])
+        (let ([row (make-vector (string-length line))])
+          (for ([c (in-string line)]
+                [j (in-naturals 0)])
+            (vector-set! row j (string->number (string c))))
+          (vector-set! matrix i row)))
+      matrix)))
+
 (define (get-neibors curr max-row max-col)
   (define (valid pos limit) (and (< pos limit) (>= pos 0)))
 
@@ -26,25 +74,6 @@
       [(null? directions) res]
       [(generate-pos (car directions)) => (lambda (pos)  (loop (cdr directions) (cons pos res)))]
       [else (loop (cdr directions) res)])))
-
-
-(define matrix #(#(1 2 3 4)
-                 #(5 6 7 8)
-                 #(10 11 12 13)
-                 #(14 15 16 17)))
-
-(define parse-input
-  (lambda (input)
-    (let* ([lines (string-split input "\n")]
-           [matrix (make-vector (length lines))])
-      (for ([line lines]
-            [i (in-naturals 0)])
-        (let ([row (make-vector (string-length line))])
-          (for ([c (in-string line)]
-                [j (in-naturals 0)])
-            (vector-set! row j (string->number (string c))))
-          (vector-set! matrix i row)))
-      matrix)))
 
 (define get-input
   (lambda (filename)
