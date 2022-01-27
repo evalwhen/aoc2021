@@ -32,6 +32,7 @@
      (let loop ([new-pos (read-chunkk (string-ref line pos)
                                       line
                                       (add1 pos))])
+       ;; TODO: refactor.
        (cond
          [(list? new-pos) new-pos]
          [(<= len new-pos) (list 'incomplete)]
