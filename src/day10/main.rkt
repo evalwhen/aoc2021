@@ -54,7 +54,6 @@
            pos)]))
 
 (module+ test
-  (require rackunit)
   (read-chunk "()()")
   (read-chunk "[<>({}){}[(])<>]]")
   (read-chunk "{([(<{}[<>[]}>{[]{[(<()>")
