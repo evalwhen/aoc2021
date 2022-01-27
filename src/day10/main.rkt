@@ -40,4 +40,9 @@
                                                                                                            (add1 new-pos)))]))]
     [(chunk-end? (string-ref line pos)) 'corrupted]))
 
-(read-chunk "[<>({}){}[(])<>]]")
+(module+ test
+  (require rackunit)
+  (read-chunk "()()")
+  (read-chunk "[<>({}){}[(])<>]]")
+  )
+
