@@ -34,6 +34,7 @@
 
 (define (basin-size data pos)
   (define seen (mutable-set pos))
+  ;; from low-pos to traverse self and it's all neibors until ...
   (let traverse ([pos pos])
     (define v (hash-ref data pos 9))
     (cond
@@ -53,7 +54,6 @@
 
 ;; (part1 (parse-data "input2.txt"))
 (puzzle2 (parse-data "input1.txt"))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define parse-input
