@@ -17,11 +17,11 @@
   (cond
     [(string=? line "") '()]
     [(chunk-start? (string-ref line 0))
-     (read-chunkk (string-ref line 0) line 1)]))
+     (read-remaining (string-ref line 0) line 1)]))
 
 ;; [<>({}){}[([])<>]]
 ;; {([(<{}[<>[]}>{[]{[(<()>
-(define (read-chunkk start line pos)
+(define (read-remaining start line pos)
   (define len (string-length line))
   (cond
     [(<= len pos) (list 'incomplete)]
@@ -29,7 +29,7 @@
              (string-ref line pos))
      (add1 pos)]
     [(chunk-start? (string-ref line pos))
-     (let loop ([new-pos (read-chunkk (string-ref line pos)
+     (let loop ([new-pos (read-remaining (string-ref line pos)
                                       line
                                       (add1 pos))])
        ;; TODO: refactor.
@@ -40,7 +40,7 @@
                   (cdr (assoc start start-to-end)))
           (add1 new-pos)]
          [(chunk-start? (string-ref line new-pos))
-          (loop (read-chunkk (string-ref line new-pos)
+          (loop (read-remaining (string-ref line new-pos)
                              line
                              (add1 new-pos)))]
          [else (list 'corrupted
