@@ -34,7 +34,7 @@
 
 (define (basin-size data pos)
   (define seen (mutable-set pos))
-  (let loop ([pos pos])
+  (let traverse ([pos pos])
     (define v (hash-ref data pos 9))
     (cond
       [(= v 9) 0]
@@ -42,7 +42,7 @@
        (add1 (for/sum ([neibor (neibor-pos (car pos) (cdr pos))]
                        #:unless (set-member? seen neibor))
                (set-add! seen neibor)
-               (loop neibor)))])))
+               (traverse neibor)))])))
 (basin-size (parse-data "input1.txt") (cons 4 6))
 
 (define (puzzle2 data)
