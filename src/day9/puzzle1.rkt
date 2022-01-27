@@ -20,28 +20,6 @@
                      [j (in-naturals 0)])
             (hash-set map (cons i j) (string->number (string c)))))))))
 
-(define (find-basin data pos direction)
-  (let loop ([res '()] [pos (direction pos)])
-    (define v (hash-ref data pos 9))
-    (cond
-      [(= v 9) res]
-      [else (loop (cons v res) (direction pos))])))
-
-(define up (lambda (pos) (cons (sub1 (car pos)) (cdr pos))))
-(define down (lambda (pos) (cons (add1 (car pos)) (cdr pos))))
-(define left (lambda (pos) (cons (car pos) (sub1 (cdr pos)))))
-(define right (lambda (pos) (cons (car pos) (add1 (cdr pos)))))
-
-
-(find-basin (parse-data "input1.txt") (cons 0 9) down)
-
-(define (basins data pos)
-  (for/fold ([res '()])
-            ([direction (in-list (list up down left right))])
-    (append res (find-basin data pos direction))))
-
-(basins (parse-data "input1.txt") (cons 0 9))
-
 (define (low-pos? data p)
   (define curr (hash-ref data p #f))
   (for/and ([pos (in-list (neibor-pos (car p) (cdr p)))])
@@ -53,12 +31,25 @@
                #:when (low-pos? data pos))
       (add1 (hash-ref data pos +inf.0)))))
 
+
+(define (basin-size data pos)
+  (define seen (mutable-set pos))
+  (let loop ([pos pos])
+    (define v (hash-ref data pos 9))
+    (cond
+      [(= v 9) 0]
+      [else
+       (add1 (for/sum ([neibor (neibor-pos (car pos) (cdr pos))]
+                       #:unless (set-member? seen neibor))
+               (set-add! seen neibor)
+               (loop neibor)))])))
+(basin-size (parse-data "input1.txt") (cons 4 6))
+
 (define (puzzle2 data)
-  (define lsts (for/fold ([ps '()])
-                         ([pos (in-hash-keys data)]
-                          #:when (low-pos? data pos))
-                 (cons (basins data pos) ps)))
-  lsts)
+  (define basin-sizes (for/list ([pos (in-hash-keys data)]
+                                 #:when (low-pos? data pos))
+                        (basin-size data pos)))
+  (apply * (take (sort basin-sizes >) 3)))
 
 ;; (part1 (parse-data "input2.txt"))
 (puzzle2 (parse-data "input1.txt"))
