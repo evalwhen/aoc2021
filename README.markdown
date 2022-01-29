@@ -1,6 +1,6 @@
 # Aoc2021 - advent of code 2021
 
-avent of code by common lisp.
+avent of code by common lisp and racket.
 
 ## Usage
 
