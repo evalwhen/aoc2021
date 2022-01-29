@@ -21,7 +21,11 @@
   (cond
     [(string=? line "") '()]
     [(chunk-start? (string-ref line 0))
-     (read-remaining2 (string-ref line 0) line 1 '())]))
+     (let loop [(res (read-remaining2 (string-ref line 0) line 1 '()))]
+       (cond
+         [(equal? (car res) 'corrupted) res]
+         [(< (second res) (string-length line)) (read-chunk (substring line (second res) (string-length line)))]
+         [else res]))]))
 
 (define (get-close start)
   (cdr (assoc start start-to-end)))
@@ -148,14 +152,16 @@
                   (not (null? (caddr res))))
              (set! scores (append scores (list (score (reverse (caddr res))))))])))))
   (define middle-idx (floor (/ (length scores) 2)))
-  (when (not (= middle-idx 0)) (list-ref (sort scores <) middle-idx))
 
-  scores
+  ;; scores
+
+  (when (not (= middle-idx 0)) (list-ref (sort scores <) middle-idx))
   )
 (module+ test
   (score (reverse '(#\> #\} #\) #\])))
-  ;; (puzzle1 "input1.txt")
-  ;; (puzzle1 "input2.txt")
+  (puzzle1 "input1.txt")
+  (puzzle1 "input2.txt")
 
   (puzzle2 "input1.txt")
+  (puzzle2 "input2.txt")
   )
