@@ -10,6 +10,10 @@
                  (#\} . 1197)
                  (#\> . 25137)))
 
+(define complete-score '((#\) . 1)
+                         (#\] . 2)
+                         (#\} . 3)
+                         (#\> . 4)))
 (define (chunk-start? ch)
   (assoc ch start-to-end))
 
@@ -17,7 +21,10 @@
   (cond
     [(string=? line "") '()]
     [(chunk-start? (string-ref line 0))
-     (read-remaining (string-ref line 0) line 1)]))
+     (read-remaining2 (string-ref line 0) line 1 '())]))
+
+(define (get-close start)
+  (cdr (assoc start start-to-end)))
 
 ;; [<>({}){}[([])<>]]
 ;; {([(<{}[<>[]}>{[]{[(<()>
@@ -53,10 +60,60 @@
            (string-ref line pos)
            pos)]))
 
+;; [()]
+(define (read-remaining2 start line pos missing)
+  (define len (string-length line))
+  (define close (get-close start))
+  (cond
+    ;; incomplete
+    [(<= len pos) (read-remaining2 start
+                                   (string-append line (string close))
+                                   pos
+                                   (cons close missing))]
+    [(char=? close (string-ref line pos))
+     (list 'success
+           (add1 pos)
+           missing
+           line)]
+    [(chunk-start? (string-ref line pos))
+     (let loop ([new-pos (read-remaining2 (string-ref line pos)
+                                          line
+                                          (add1 pos)
+                                          missing)])
+       ;; TODO: refactor.
+       (cond
+         [(equal? (car new-pos) 'corrupted) new-pos]
+         [(<= (string-length (last new-pos)) (second new-pos))
+          (read-remaining2 start
+                           (string-append (last new-pos) (string close))
+                           (second new-pos)
+                           (cons close (caddr new-pos)))]
+         [(char=? (string-ref (last new-pos) (second new-pos))
+                  close)
+          (list 'success
+                (add1 (second new-pos))
+                (caddr new-pos)
+                (last new-pos))]
+         [(chunk-start? (string-ref (last new-pos) (second new-pos)))
+          (loop (read-remaining2 (string-ref (last new-pos) (second new-pos))
+                                 (last new-pos)
+                                 (add1 (second new-pos))
+                                 missing))]
+         [else (list 'corrupted
+                     close
+                     (string-ref (last new-pos) (second new-pos))
+                     (last new-pos)
+                     (second new-pos))]))]
+    [else
+     (list 'corrupted
+           close
+           (string-ref (string-append line (list->string missing)) pos)
+           (string-append line (list->string missing))
+           pos)]))
+
+
 (module+ test
-  (read-chunk "()()")
-  (read-chunk "[<>({}){}[(])<>]]")
-  (read-chunk "{([(<{}[<>[]}>{[]{[(<()>")
+  (read-chunk "[(()[<>])]({[<{<<[]>>( ")
   )
 
 (define (puzzle1 filename)
@@ -73,7 +130,32 @@
     (cdr (assoc c scores)))
   )
 
+(define (score closes)
+  (for/fold ([sum 0])
+            ([close closes])
+    (+ (* sum 5) (cdr (assoc close complete-score)))))
+
+(define (puzzle2 filename)
+
+  (define scores '())
+  (call-with-input-file filename
+    (lambda (in)
+      (for ([line (in-lines in)])
+        (let ([res (read-chunk line)])
+          (cond
+            [(and (list? res)
+                  (equal? (car res) 'success)
+                  (not (null? (caddr res))))
+             (set! scores (append scores (list (score (reverse (caddr res))))))])))))
+  (define middle-idx (floor (/ (length scores) 2)))
+  (when (not (= middle-idx 0)) (list-ref (sort scores <) middle-idx))
+
+  scores
+  )
 (module+ test
-  (puzzle1 "input1.txt")
-  (puzzle1 "input2.txt")
+  (score (reverse '(#\> #\} #\) #\])))
+  ;; (puzzle1 "input1.txt")
+  ;; (puzzle1 "input2.txt")
+
+  (puzzle2 "input1.txt")
   )
