@@ -22,15 +22,15 @@
                       #:when (hash-ref input neibor #f))
                   (B neibor (hash-ref input neibor))))]
            [B (lambda (pos v)
-                (if (< v 9)
-                  (begin
-                    (hash-set! input pos (+ v 1))
-                    (values flashed input))
-                  (begin
-                    (hash-set! input pos 0)
-                    (hash-set! flashed pos #t)
-                    (A pos)
-                    (values flashed input))))])
+                (cond
+                  [(< v 9)
+                   (hash-set! input pos (+ v 1))
+                   (values flashed input)]
+                  [else
+                   (hash-set! input pos 0)
+                   (hash-set! flashed pos #t)
+                   (A pos)
+                   (values flashed input)]))])
     (cond
       [(hash-ref input pos #f) => (lambda (v) (B pos v))]
       [else (values flashed input)])))
