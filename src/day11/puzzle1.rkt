@@ -49,6 +49,32 @@
 
   (define flash-counter 0)
 
+  (call-with-input-file filename
+    (lambda (in)
+      (for ([line (in-lines in)]
+            [i (in-naturals 0)])
+        (for ([ch (in-string line)]
+              [j (in-naturals 0)])
+          (hash-set! data (cons i j) (string->number (string ch)))))))
+
+  (for ([_ (in-range 0 100)])
+    (define step-flashed (make-hash))
+    (for* ([i (in-range 0 10)]
+           [j (in-range 0 10)])
+      (let-values ([(flashed _) (flash-at data (cons i j))])
+        (for ([pos (in-hash-keys flashed)])
+          (hash-set! step-flashed pos #t))))
+
+    (reset data step-flashed)
+
+    (set! flash-counter (+ flash-counter (hash-count step-flashed))))
+
+  flash-counter)
+
+(define (puzzle2 filename)
+
+  (define data (make-hash))
+
   (define all-flash-step 0)
 
   (call-with-input-file filename
@@ -70,17 +96,13 @@
       (reset data step-flashed)
 
       (when (all-flash-p data)
-        (println step)
-        (hop step)
-        (when (= all-flash-step 0)
-          (set! all-flash-step step)))
+        (set! all-flash-step step)
+        (hop step))))
 
-      (set! flash-counter (+ flash-counter (hash-count step-flashed)))))
-
-  (values flash-counter all-flash-step)
-  )
+  all-flash-step)
 
 (module+ test
   ;; (flash-at (data small-input) (cons 1 1))
   (puzzle1 "input1.txt")
+  (puzzle2 "input1.txt")
   )
