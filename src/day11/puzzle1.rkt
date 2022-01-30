@@ -52,7 +52,7 @@
         (for ([ch (in-string line)]
               [j (in-naturals 0)])
           (hash-set! data (cons i j) (string->number (string ch)))))))
-  (for ([step (in-range 0 100)])
+  (for ([_ (in-range 0 100)])
     (define step-flashed (make-hash))
     (for* ([i (in-range 0 10)]
            [j (in-range 0 10)])
