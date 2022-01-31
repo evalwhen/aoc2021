@@ -11,9 +11,7 @@
       (for ([line (in-lines in)])
         (let* ([parts (string-split line "-")]
                [k (first parts)]
-               [v (second parts)]
-               [has-big-cave (or (big-cave-p k)
-                                 (big-cave-p v))])
+               [v (second parts)])
           (hash-set! map
                      k
                      (cons v (hash-ref map k null)))
