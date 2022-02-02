@@ -48,7 +48,7 @@
 
 (define (paths start end)
 
-  (define (allow-visit visited vertex)
+  (define (allow-visit-p visited vertex)
     (if (or (string=? vertex start)
             (string=? vertex end))
         (not (hash-ref visited vertex #f))
@@ -57,18 +57,22 @@
             (not (has-twice visited)))))
 
   (letrec ([A (lambda (start visited)
+                (define curr-visited (hash-set visited
+                                          start
+                                          (+ 1 (hash-ref visited start 0))))
                 (if (string=? start end)
                     `((,end))
                     (for/fold ([res '()])
                               ([conn (connects start)]
-                               #:when (allow-visit visited conn))
+                               #:when (allow-visit-p curr-visited conn))
                       (append res
-                              (append-start start (A conn (hash-set visited
-                                                                    start
-                                                                    (+ 1 (hash-ref visited start 0)))))))))])
+                              (append-start start (A conn curr-visited))))))])
     (A start (hash))))
 
 (module+ test
   ;; (paths "start" "end")
   (length (paths "start" "end"))
   )
+
+
+;; "start" "DR" "xh" "DR" "cu" "LO" "cu" "xh" "DR" "xx" "DR" "qc" "vx" "LO" "ny" "LO" "end"

@@ -38,7 +38,7 @@
       [(null? paths) res]
       [else (loop (cdr paths) (cons (cons start (car paths))
                                     res))])))
-(define (not-visited visited vertex)
+(define (allow-visit-p visited vertex)
   (or (big-cave-p vertex)
       (not (member vertex visited))))
 
@@ -47,7 +47,7 @@
       `((,end))
       (for/fold ([res '()])
                 ([conn (connects start)]
-                 #:when (not-visited visited conn))
+                 #:when (allow-visit-p visited conn))
         (append res (append-start start (paths conn end (cons start visited)))))))
 
 (module+ test
