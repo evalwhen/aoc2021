@@ -27,10 +27,10 @@
 
 
 (module+ test
-  ;; (parse-data "input2.txt")
+  (parse-data "input3.txt")
   )
 
-(define graph (parse-data "input2.txt"))
+(define graph (parse-data "input3.txt"))
 
 (define (connects start)
   (hash-ref graph start null))
@@ -42,12 +42,9 @@
       [else (loop (cdr paths) (cons (cons start (car paths))
                                     res))])))
 (define (has-twice visited)
-  (let/cc return
-    (for ([(k v) (in-hash visited)])
-      (when (and (small-cave-p k)
-               (= v 2))
-          (return #t)))
-    (return #f)))
+  (for/or ([(k v) (in-hash visited)])
+    (and (small-cave-p k)
+         (= v 2))))
 
 (define (paths start end)
 
@@ -72,6 +69,6 @@
     (A start (hash))))
 
 (module+ test
-  ;; (length (paths "start" "end"))
-  (paths "start" "end")
+  ;; (paths "start" "end")
+  (length (paths "start" "end"))
   )
