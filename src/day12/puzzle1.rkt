@@ -42,15 +42,16 @@
   (or (big-cave-p vertex)
       (not (member vertex visited))))
 
-(define (paths start end visited)
-  (if (string=? start end)
-      `((,end))
-      (for/fold ([res '()])
-                ([conn (connects start)]
-                 #:when (allow-visit-p visited conn))
-        (append res (append-start start (paths conn end (cons start visited)))))))
+(define (paths start end)
+  (letrec ([A (lambda (start visited)
+                (define curr-visited (cons start visited))
+                (if (string=? start end)
+                    `((,end))
+                    (for/fold ([res '()])
+                              ([conn (connects start)]
+                               #:when (allow-visit-p curr-visited conn))
+                      (append res (append-start start (A conn curr-visited))))))])
+    (A start '())))
 
 (module+ test
-  (length (paths "start" "end" '()))
-  (paths "start" "end" '())
-  )
+  (length (paths "start" "end")))
