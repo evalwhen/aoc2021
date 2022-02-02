@@ -38,11 +38,13 @@
       [(null? paths) res]
       [else (loop (cdr paths) (cons (cons start (car paths))
                                     res))])))
-(define (allow-visit-p visited vertex)
-  (or (big-cave-p vertex)
-      (not (member vertex visited))))
-
 (define (paths start end)
+
+  (define (allow-visit-p visited vertex)
+    (or (big-cave-p vertex)
+        (not (member vertex visited))))
+
+
   (letrec ([A (lambda (start visited)
                 (define curr-visited (cons start visited))
                 (if (string=? start end)
