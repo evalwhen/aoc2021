@@ -77,11 +77,33 @@
       [(struct instruction ('left at))
        (fold-left dots at)])))
 
+(define (puzzle2 filename)
+  (define (execute dots ins)
+    (match ins
+      [(struct instruction ('up at))
+       (fold-up dots at)]
+      [(struct instruction ('left at))
+       (fold-left dots at)]))
+
+  (let-values ([(dots mx my ins) (parse-data filename)])
+    (let loop ([dots dots] [ins ins])
+      (cond
+        [(null? ins) (display-dots dots mx my)]
+        [else (loop (execute dots (car ins)) (cdr ins))]))))
+
+(define (display-dots dots mx my)
+  (for ([x (in-inclusive-range 0 (apply max (map car (hash-keys dots))))])
+    (for ([y (in-inclusive-range 0 (apply max (map cdr (hash-keys dots))))])
+      (if (hash-has-key? dots (cons x y))
+          (display #\#)
+          (display #\.)))
+    (newline)))
+
 (module+ test
   ;; (parse-data "input1.txt")
   ;; ((trans-fold 7) 0)
   (hash-count (puzzle1 "input1.txt"))
   (hash-count (puzzle1 "input2.txt"))
-  ;; (hash-count (fold-up (parse-data "input1.txt") 7))
-  ;; (hash-count (fold-left (parse-data "input2.txt") 655))
+
+  (puzzle2 "input2.txt")
   )
