@@ -18,16 +18,16 @@
 (define (parse-data filename)
   (call-with-input-file filename
     (lambda (in)
-      (define dots (for/fold ([dots (hash)])
-                             ([line (in-lines in)]
+      (define dots (for/hash ([line (in-lines in)]
                               #:break (string=? line ""))
-                     (hash-set dots (line-to-dots line) #t)))
+                     (values (line-to-dots line) #t)))
+
       (define ins (for/list ([line (in-lines in)])
                     (line-to-instruction line)))
 
       (values dots ins))))
 
-(define (do-fold2 dots ins)
+(define (do-fold dots ins)
   (define (convert ins pos)
     (define row (car pos))
     (define col (cdr pos))
@@ -43,14 +43,14 @@
 
 (define (puzzle1 filename)
   (let-values ([(dots ins) (parse-data filename)])
-    (do-fold2 dots (car ins))))
+    (do-fold dots (car ins))))
 
 (define (puzzle2 filename)
   (let-values ([(dots ins) (parse-data filename)])
     (let loop ([dots dots] [ins ins])
       (cond
         [(null? ins) (display-dots dots)]
-        [else (loop (do-fold2 dots (car ins)) (cdr ins))]))))
+        [else (loop (do-fold dots (car ins)) (cdr ins))]))))
 
 (define (display-dots dots)
   (for ([row (in-inclusive-range 0 (apply max (map car (hash-keys dots))))])
