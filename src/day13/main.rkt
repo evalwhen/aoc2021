@@ -65,6 +65,6 @@
   (hash-count (puzzle1 "input1.txt"))
   (hash-count (puzzle1 "input2.txt"))
 
-  ;;GJZGLVPJ
+  ;;GJZGLUPJ
   (puzzle2 "input2.txt")
   )
