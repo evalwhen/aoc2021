@@ -27,10 +27,12 @@
                  #:unless (string=? line ""))
         (match (line-to-dots line)
           [(cons x y)
+
            (when (> x max-x) (set! max-x x))
            (when (> y max-y) (set! max-y y))
            (hash-set! dots (cons x y) #t)]
           [_
+
            (set! ins (append ins (list (line-to-instruction line))))]))))
   (values dots max-x max-y ins))
 
