@@ -16,82 +16,44 @@
     [_ #f]))
 
 (define (parse-data filename)
-  (define dots (make-hash))
-  (define max-x 0)
-  (define max-y 0)
-  (define ins '())
-
   (call-with-input-file filename
     (lambda (in)
-      (for ([line (in-lines in)]
-                 #:unless (string=? line ""))
-        (match (line-to-dots line)
-          [(cons x y)
+      (define dots (for/fold ([dots (hash)])
+                             ([line (in-lines in)]
+                              #:break (string=? line ""))
+                     (hash-set dots (line-to-dots line) #t)))
+      (define ins (for/list ([line (in-lines in)])
+                    (line-to-instruction line)))
 
-           (when (> x max-x) (set! max-x x))
-           (when (> y max-y) (set! max-y y))
-           (hash-set! dots (cons x y) #t)]
-          [_
+      (values dots ins)))
+  )
 
-           (set! ins (append ins (list (line-to-instruction line))))]))))
-  (values dots max-x max-y ins))
+(define (do-fold2 dots ins)
+  (define (convert ins pos)
+    (define x (car pos))
+    (define y (cdr pos))
 
-(define trans-fold
-  (lambda (at)
-    (lambda (v)
-      (- (* 2 at) v))))
-
-(define (fold-up dots at)
-  (do-fold dots
-           3000
-           at
-           (lambda (x) x)
-           (trans-fold at)))
-
-(define (fold-left dots at)
-  (do-fold dots
-           at
-           3000
-           (trans-fold at)
-           (lambda (x) x)))
-
-
-(define (do-fold dots xlen ylen xc yc)
-  (define res (make-hash))
-
-  (for* ([x (in-range 0 xlen)]
-         [y (in-range 0 ylen)])
-
-    (when (hash-ref dots (cons x y) #f)
-      (hash-set! res (cons x y) #t))
-
-    (when (hash-ref dots (cons (xc x) (yc y)) #f)
-      (hash-set! res (cons x y) #t)))
-  res)
-
-(define (puzzle1 filename)
-  (let-values ([(dots mx my ins) (parse-data filename)])
-    (match (first ins)
-      [(struct instruction ('up at))
-       (fold-up dots at)]
-      [(struct instruction ('left at))
-       (fold-left dots at)])))
-
-(define (puzzle2 filename)
-  (define (execute dots ins)
     (match ins
       [(struct instruction ('up at))
-       (fold-up dots at)]
+       (cons x (if (< y at) y (- at (- y at))))]
       [(struct instruction ('left at))
-       (fold-left dots at)]))
+       (cons (if (< x at) x (- at (- x at))) y)]))
 
-  (let-values ([(dots mx my ins) (parse-data filename)])
+  (for/hash ([(pos v) (in-hash dots)])
+    (values (convert ins pos) v)))
+
+(define (puzzle1 filename)
+  (let-values ([(dots  ins) (parse-data filename)])
+    (do-fold2 dots (car ins))))
+
+(define (puzzle2 filename)
+  (let-values ([(dots ins) (parse-data filename)])
     (let loop ([dots dots] [ins ins])
       (cond
-        [(null? ins) (display-dots dots mx my)]
-        [else (loop (execute dots (car ins)) (cdr ins))]))))
+        [(null? ins) (display-dots dots)]
+        [else (loop (do-fold2 dots (car ins)) (cdr ins))]))))
 
-(define (display-dots dots mx my)
+(define (display-dots dots)
   (for ([y (in-inclusive-range 0 (apply max (map cdr (hash-keys dots))))])
     (for ([x (in-inclusive-range 0 (apply max (map car (hash-keys dots))))])
       (if (hash-has-key? dots (cons x y))
@@ -100,8 +62,7 @@
     (newline)))
 
 (module+ test
-  ;; (parse-data "input1.txt")
-  ;; ((trans-fold 7) 0)
+  (parse-data "input1.txt")
   (hash-count (puzzle1 "input1.txt"))
   (hash-count (puzzle1 "input2.txt"))
 
