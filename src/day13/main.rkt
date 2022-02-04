@@ -11,8 +11,8 @@
 
 (define (line-to-dots line)
   (match (string-split line ",")
-    [(list v1 v2) (cons (string->number v1)
-                          (string->number v2))]
+    [(list col row) (cons (string->number row)
+                          (string->number col))]
     [_ #f]))
 
 (define (parse-data filename)
@@ -25,25 +25,24 @@
       (define ins (for/list ([line (in-lines in)])
                     (line-to-instruction line)))
 
-      (values dots ins)))
-  )
+      (values dots ins))))
 
 (define (do-fold2 dots ins)
   (define (convert ins pos)
-    (define x (car pos))
-    (define y (cdr pos))
+    (define row (car pos))
+    (define col (cdr pos))
 
     (match ins
       [(struct instruction ('up at))
-       (cons x (if (< y at) y (- at (- y at))))]
+       (cons (if (< row at) row (- at (- row at))) col)]
       [(struct instruction ('left at))
-       (cons (if (< x at) x (- at (- x at))) y)]))
+       (cons row (if (< col at) col (- at (- col at))))]))
 
   (for/hash ([(pos v) (in-hash dots)])
     (values (convert ins pos) v)))
 
 (define (puzzle1 filename)
-  (let-values ([(dots  ins) (parse-data filename)])
+  (let-values ([(dots ins) (parse-data filename)])
     (do-fold2 dots (car ins))))
 
 (define (puzzle2 filename)
@@ -54,11 +53,11 @@
         [else (loop (do-fold2 dots (car ins)) (cdr ins))]))))
 
 (define (display-dots dots)
-  (for ([y (in-inclusive-range 0 (apply max (map cdr (hash-keys dots))))])
-    (for ([x (in-inclusive-range 0 (apply max (map car (hash-keys dots))))])
-      (if (hash-has-key? dots (cons x y))
+  (for ([row (in-inclusive-range 0 (apply max (map car (hash-keys dots))))])
+    (for ([col (in-inclusive-range 0 (apply max (map cdr (hash-keys dots))))])
+      (if (hash-has-key? dots (cons row col))
           (display #\#)
-          (display #\.)))
+          (display #\Space)))
     (newline)))
 
 (module+ test
