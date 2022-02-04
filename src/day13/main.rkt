@@ -92,8 +92,8 @@
         [else (loop (execute dots (car ins)) (cdr ins))]))))
 
 (define (display-dots dots mx my)
-  (for ([x (in-inclusive-range 0 (apply max (map car (hash-keys dots))))])
-    (for ([y (in-inclusive-range 0 (apply max (map cdr (hash-keys dots))))])
+  (for ([y (in-inclusive-range 0 (apply max (map cdr (hash-keys dots))))])
+    (for ([x (in-inclusive-range 0 (apply max (map car (hash-keys dots))))])
       (if (hash-has-key? dots (cons x y))
           (display #\#)
           (display #\.)))
@@ -105,5 +105,6 @@
   (hash-count (puzzle1 "input1.txt"))
   (hash-count (puzzle1 "input2.txt"))
 
+  ;;GJZGLVPJ
   (puzzle2 "input2.txt")
   )
