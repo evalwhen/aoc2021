@@ -26,8 +26,19 @@
   template
   (rule (string->list "CH")))
 
+(define-syntax-rule (define/memo (name arg ...) body0 body ...)
+  (define name
+    (let ([memo (make-hash)])
+      (lambda (arg ...)
+        (define k (list arg ...))
+        (cond
+          [(hash-ref memo k #f)]
+          [else (let ([res (begin body0 body ...)])
+                  (begin0 res
+                    (hash-set! memo k res)))])))))
+
 ;; 上层信息会随着分裂（递归）继承到下层
-(define (step seqs n)
+(define/memo (step seqs n)
   (if (zero? n)
       (for/fold ([counter (hash)])
                 ([pair (in-list seqs)])
