@@ -69,4 +69,5 @@
   ;; (step2 (string-ref template 0) (substring template 1) "")
   (time (puzzle 10))
   (time (puzzle 40))
+  (time (puzzle 1800))
   )
