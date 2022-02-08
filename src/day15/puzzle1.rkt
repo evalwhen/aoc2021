@@ -27,7 +27,7 @@
           (hash-set data (cons x y) (string->number (string c))))))))
 
 (module+ test
-  (parse-data "test.txt"))
+  (parse-data "input1.txt"))
 
 (define risk-level (lambda (data pos) (hash-ref data pos)))
 
@@ -40,7 +40,9 @@
           [(hash-ref memo k #f)]
           [else (let ([res (begin body0 body ...)])
                   (begin0 res
-                    (hash-set! memo k res)))])))))
+                    (hash-set! memo k res)
+                    (println k)
+                    (println res)))])))))
 
 (define/memo (find-min data start end)
   (if (equal? start end)
@@ -77,7 +79,7 @@
 
 (module+ test
 
-  (time (puzzle "input2.txt"))
+  (time (puzzle "input1.txt"))
 
   ;; (time (puzzle "input2.txt"))
   )
