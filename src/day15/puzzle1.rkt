@@ -1,5 +1,7 @@
 #lang racket
 
+(require memo)
+
 (define (neibors pos m)
   (let* ([x (car pos)]
          [y (cdr pos)])
@@ -40,8 +42,6 @@
           [else (let-values ([(v path) (begin body0 body ...)])
                   (begin0 (values v path)
                     (hash-set! memo k (list v path))
-                    ;; (println k)
-                    ;; (println res)
                     ))])))))
 
 (define (find-min data start end)
@@ -67,21 +67,21 @@
   ;;                 (find-min neibor))))
   ;;     ))
 
-  (define (find-min start path)
+  (define/memo (find-min start)
     (if (equal? start end)
-        (values (risk-level data end) path)
+        (values (risk-level data end) (list end))
         (let-values ([(v path) (let ([nbs (neibors start m)])
                                  (if (= (length nbs) 2)
-                                     (let-values ([(v1 path1) (find-min (first nbs) (cons start path))]
-                                                  [(v2 path2) (find-min (second nbs) (cons start path))])
+                                     (let-values ([(v1 path1) (find-min (first nbs))]
+                                                  [(v2 path2) (find-min (second nbs))])
 
                                        (if (<= v1 v2)
                                            (values v1 path1)
                                            (values v2 path2)))
-                                     (find-min (first nbs) (cons start path))))])
+                                     (find-min (first nbs))))])
           (values (+ v (risk-level data start))
-                  path))))
-  (find-min start '()))
+                  (cons start path)))))
+  (find-min start))
 
 (define puzzle
   (lambda (filename)
@@ -95,7 +95,7 @@
 
 (module+ test
 
-  (time (puzzle "input1.txt"))
+ ;; (time (puzzle "input1.txt"))
 
-  ;; (time (puzzle "input2.txt"))
+  (time (puzzle "input2.txt"))
   )
