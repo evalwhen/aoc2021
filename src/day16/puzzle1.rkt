@@ -17,12 +17,12 @@
   (define last-pos (- (string-length bits) 1))
 
   (let loop ([pos 0] [n last-pos] [res 0])
-    (cond
-      [(= pos last-pos) (+ res (string->number (string (string-ref bits pos))))]
-      [else (loop (add1 pos)
-                  (sub1 n)
-                  (+ res (* (expt 2 n)
-                            (string->number (string (string-ref bits pos))))))])))
+    (let ([posn (string->number (string (string-ref bits pos)))])
+      (cond
+        [(= pos last-pos) (+ res posn)]
+        [else (loop (add1 pos)
+                    (sub1 n)
+                    (+ res (* (expt 2 n) posn)))]))))
 (module+ test
   ;; (bits-to-decimal "1111")
   (bits-to-decimal "0000101")
