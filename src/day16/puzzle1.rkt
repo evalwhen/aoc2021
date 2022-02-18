@@ -30,10 +30,7 @@
   (letrec ([A (lambda (input pass res)
                 (cond
                   [(= len pass)
-                   (result 'op
-                           ver
-                           (reverse res)
-                           input)]
+                   (result 'op ver (reverse res) input)]
                   [else (let ([r (parse-packet input)]
                               [header (packet-header input)])
                           (A (result-remaining r)
