@@ -10,7 +10,8 @@
 
 (define (parse-op ver input)
   (case (op-type input)
-    [(len) (parse-op-by-len ver (op-body input 'len) (op-len input))]))
+    [(len) (parse-op-by-len ver (op-body input 'len) (op-len input))]
+    [(cnt) (parse-op-by-count ver (op-body input 'cnt) (op-count input))]))
 
 (define (parse-literal ver input)
   (define  (stop-p group)
@@ -40,6 +41,17 @@
                              (cons r res)))]))])
     (A input 0 '())))
 
+(define (parse-op-by-count ver input cnt)
+  (letrec ([A (lambda (input pass res)
+                (cond
+                  [(= cnt pass)
+                   (result 'op ver (reverse res) input)]
+                  [else (let ([r (parse-packet input)]
+                              [header (packet-header input)])
+                          (A (result-remaining r)
+                             (add1 pass)
+                             (cons r res)))]))])
+    (A input 0 '())))
 
 
 (define (packet-body input)
@@ -75,7 +87,7 @@
   (let ([c (string-ref input 0)])
     (if (char=? c #\0)
         'len
-        'count)))
+        'cnt)))
 
 (define (op-len input)
   (let ([body (substring input 1)])
