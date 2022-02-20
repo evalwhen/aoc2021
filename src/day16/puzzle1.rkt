@@ -1,5 +1,33 @@
 #lang racket
 
+(define digits '(("0" . "0000")
+                 ("1" . "0001")
+                 ("2" . "0010")
+                 ("3" . "0011")
+                 ("4" . "0100")
+                 ("5" . "0101")
+                 ("6" . "0110")
+                 ("7" . "0111")
+                 ("8" . "1000")
+                 ("9" . "1001")
+                 ("A" . "1010")
+                 ("B" . "1011")
+                 ("C" . "1100")
+                 ("D" . "1101")
+                 ("E" . "1110")
+                 ("F" . "1111")))
+
+(define (digit-to-bin d)
+  (cdr (assoc d digits)))
+
+(define (input-to-bin in)
+  (for/fold ([bin ""])
+            ([d (in-string in)])
+    (string-append bin (digit-to-bin (string d)))))
+
+;; (module+ test
+;;   (input-to-bin "D2FE28"))
+
 (struct result (type ver body remaining) #:transparent)
 
 (define (parse-packet input)
@@ -31,12 +59,10 @@
   (letrec ([A (lambda (input pass res)
                 (cond
                   [(= len pass)
-                   (result 'op ver (reverse res) input)]
-                  [else (let ([r (parse-packet input)]
-                              [header (packet-header input)])
+                   (result 'op-len ver (reverse res) input)]
+                  [else (let ([r (parse-packet input)])
                           (A (result-remaining r)
                              (+ pass
-                                (string-length header)
                                 (body-len r))
                              (cons r res)))]))])
     (A input 0 '())))
@@ -45,9 +71,8 @@
   (letrec ([A (lambda (input pass res)
                 (cond
                   [(= cnt pass)
-                   (result 'op ver (reverse res) input)]
-                  [else (let ([r (parse-packet input)]
-                              [header (packet-header input)])
+                   (result 'op-cnt ver (reverse res) input)]
+                  [else (let ([r (parse-packet input)])
                           (A (result-remaining r)
                              (add1 pass)
                              (cons r res)))]))])
@@ -58,18 +83,39 @@
   (substring input 6))
 
 (define (body-len r)
+  (cond [(literal-p r)
+         (+ 6
+            (length (result-body r))
+            (for/fold ([total 0])
+                      ([part (in-list (result-body r))])
+              (+ total (string-length part))))]
+        [(op-len-p r)
+         (+ 6 1 15 (for/fold ([total 0])
+                         ([sr (in-list (result-body r))])
+                 (+ total (body-len sr))))]
+        [(op-cnt-p r)
+         (+ 6 1 11 (for/fold ([total 0])
+                         ([sr (in-list (result-body r))])
+                 (+ total (body-len sr))))]))
+
+(define (version-sum r)
   (if (literal-p r)
-      (+ (length (result-body r))
-         (for/fold ([total 0])
-                   ([part (in-list (result-body r))])
-           (+ total (string-length part))))
+      (result-ver r)
       (for/fold ([total 0])
-                ([sr (in-list (result-body r))])
-        (+ total (body-len sr)))))
+                ([part (in-list (result-body r))])
+        (+ total (result-ver r) (version-sum part)))))
 
 (define (literal-p r)
   (symbol=? (result-type r)
             'literal))
+
+(define (op-len-p r)
+  (symbol=? (result-type r)
+            'op-len))
+
+(define (op-cnt-p r)
+  (symbol=? (result-type r)
+            'op-cnt))
 
 (define (packet-header input)
   (substring input 0 6))
@@ -78,10 +124,12 @@
   (bits-to-decimal (substring (packet-header input) 0 3)))
 
 (define (packet-type input)
-  (let ([typ (substring (packet-header input) 3 6)])
-    (if (string=? typ "100")
-        'literal
-        'op)))
+  (if (< (string-length input) 6)
+      'invalid
+      (let ([typ (substring (packet-header input) 3 6)])
+        (cond
+          [(string=? typ "100") 'literal]
+          [else 'op]))))
 
 (define (op-type input)
   (let ([c (string-ref input 0)])
@@ -94,7 +142,7 @@
     (bits-to-decimal (substring body 0 15))))
 
 (define (op-count input)
-  (let ([body (op-body  input)])
+  (let ([body (substring input 1)])
     (bits-to-decimal (substring body 0 11))))
 
 (define (op-body input typ)
@@ -119,10 +167,27 @@
         [else (loop (add1 pos)
                     (sub1 n)
                     (+ res (* (expt 2 n) posn)))]))))
+;; (module+ test
+;;   ;; (bits-to-decimal "1111")
+;;   (bits-to-decimal "0000101")
+;;   (result-body (parse-packet "110100101111111000101000"))
+;;                                     ;; 1101000101001010010001001000000000
+;;   (result-body (parse-packet "00111000000000000110111101000101001010010001001000000000"))
+;;   ;; (result-body (parse-packet "11101110000000001101010000001100100000100011000001100000"))
+;;   (parse-packet (input-to-bin "8A004A801A8002F478"))
+;;   (version-sum (parse-packet (input-to-bin "8A004A801A8002F478")))
+;;   )
+
+(define (puzzle1 filename)
+  (define raw (call-with-input-file filename
+                (lambda (in)
+                  (read-line in))))
+  ;; (println (input-to-bin raw))
+  (version-sum (parse-packet (input-to-bin raw)))
+  )
+
 (module+ test
-  ;; (bits-to-decimal "1111")
-  (bits-to-decimal "0000101")
-  (result-body (parse-packet "110100101111111000101000"))
-                                    ;; 1101000101001010010001001000000000
-  (result-body (parse-packet "00111000000000000110111101000101001010010001001000000000"))
+  (puzzle1 "input1.txt")
+  ;; (bits-to-decimal "0000000001000010")
+  ;; (parse-packet "10100100000000010000100111111000000000100001001100001001010100011100111001111110111000111000001000000000010001000111100000")
   )
