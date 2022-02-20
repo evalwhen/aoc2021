@@ -45,11 +45,9 @@
   (define  (stop-p group)
     (char=? (string-ref group 0) #\0))
 
-  ;; (println input)
   (let loop ([in input] [out '()])
     (let* ([group (substring in 0 5)]
            [part (substring group 1)])
-      ;; (println group)
       (cond
         [(stop-p group) (result 'literal ver (reverse (cons part out)) (substring in 5))]
         [else (loop (substring in 5)
@@ -174,7 +172,6 @@
   (define raw (call-with-input-file filename
                 (lambda (in)
                   (read-line in))))
-  ;; (println (input-to-bin raw))
   (version-sum (parse-packet (input-to-bin raw)))
   )
 
