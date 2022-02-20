@@ -101,9 +101,9 @@
 (define (version-sum r)
   (if (literal-p r)
       (result-ver r)
-      (for/fold ([total 0])
-                ([part (in-list (result-body r))])
-        (+ total (result-ver r) (version-sum part)))))
+      (+ (result-ver r) (for/fold ([total 0])
+                                  ([part (in-list (result-body r))])
+                          (+ total (version-sum part))))))
 
 (define (literal-p r)
   (symbol=? (result-type r)
@@ -124,12 +124,10 @@
   (bits-to-decimal (substring (packet-header input) 0 3)))
 
 (define (packet-type input)
-  (if (< (string-length input) 6)
-      'invalid
-      (let ([typ (substring (packet-header input) 3 6)])
-        (cond
-          [(string=? typ "100") 'literal]
-          [else 'op]))))
+  (let ([typ (substring (packet-header input) 3 6)])
+    (cond
+      [(string=? typ "100") 'literal]
+      [else 'op])))
 
 (define (op-type input)
   (let ([c (string-ref input 0)])
@@ -167,16 +165,10 @@
         [else (loop (add1 pos)
                     (sub1 n)
                     (+ res (* (expt 2 n) posn)))]))))
-;; (module+ test
-;;   ;; (bits-to-decimal "1111")
-;;   (bits-to-decimal "0000101")
-;;   (result-body (parse-packet "110100101111111000101000"))
-;;                                     ;; 1101000101001010010001001000000000
-;;   (result-body (parse-packet "00111000000000000110111101000101001010010001001000000000"))
-;;   ;; (result-body (parse-packet "11101110000000001101010000001100100000100011000001100000"))
-;;   (parse-packet (input-to-bin "8A004A801A8002F478"))
-;;   (version-sum (parse-packet (input-to-bin "8A004A801A8002F478")))
-;;   )
+(module+ test
+  (version-sum (parse-packet (input-to-bin "8A004A801A8002F478")))
+  (version-sum (parse-packet (input-to-bin "620080001611562C8802118E34")))
+  )
 
 (define (puzzle1 filename)
   (define raw (call-with-input-file filename
