@@ -17,6 +17,10 @@
                  ("E" . "1110")
                  ("F" . "1111")))
 
+(define LITERAL-HEADER-LEN 6)
+(define OP-LEN-HEADER-LEN (+ 6 1 15))
+(define OP-CNT-HEADER-LEN (+ 6 1 11))
+
 (define (digit-to-bin d)
   (cdr (assoc d digits)))
 
@@ -61,7 +65,7 @@
                   [else (let ([r (parse-packet input)])
                           (A (result-remaining r)
                              (+ pass
-                                (body-len r))
+                                (current-len r))
                              (cons r res)))]))])
     (A input 0 '())))
 
@@ -80,21 +84,23 @@
 (define (packet-body input)
   (substring input 6))
 
-(define (body-len r)
+(define (current-len r)
   (cond [(literal-p r)
-         (+ 6
+         (+ LITERAL-HEADER-LEN
             (length (result-body r))
             (for/fold ([total 0])
                       ([part (in-list (result-body r))])
               (+ total (string-length part))))]
         [(op-len-p r)
-         (+ 6 1 15 (for/fold ([total 0])
-                         ([sr (in-list (result-body r))])
-                 (+ total (body-len sr))))]
+         (+ OP-LEN-HEADER-LEN
+            (for/fold ([total 0])
+                      ([sr (in-list (result-body r))])
+              (+ total (current-len sr))))]
         [(op-cnt-p r)
-         (+ 6 1 11 (for/fold ([total 0])
-                         ([sr (in-list (result-body r))])
-                 (+ total (body-len sr))))]))
+         (+ OP-CNT-HEADER-LEN
+            (for/fold ([total 0])
+                      ([sr (in-list (result-body r))])
+              (+ total (current-len sr))))]))
 
 (define (version-sum r)
   (if (literal-p r)
