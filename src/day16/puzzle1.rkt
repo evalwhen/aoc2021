@@ -32,18 +32,18 @@
 ;; (module+ test
 ;;   (input-to-bin "D2FE28"))
 
-(struct result (type ver body remaining) #:transparent)
+(struct result (type ver op body remaining) #:transparent)
 
 (define (parse-packet input)
   (case (packet-type input)
-    [(literal) (parse-literal (packet-version input)
+    ['literal (parse-literal (packet-version input)
                               (packet-body input))]
-    [(op) (parse-op (packet-version input) (packet-body input))]))
+    [else (parse-op (packet-type input ) (packet-version input) (packet-body input))]))
 
-(define (parse-op ver input)
+(define (parse-op typ ver input)
   (case (op-type input)
-    [(len) (parse-op-by-len ver (op-body input 'len) (op-len input))]
-    [(cnt) (parse-op-by-count ver (op-body input 'cnt) (op-count input))]))
+    [(len) (parse-op-by-len typ ver (op-body input 'len) (op-len input))]
+    [(cnt) (parse-op-by-count typ ver (op-body input 'cnt) (op-count input))]))
 
 (define (parse-literal ver input)
   (define  (stop-p group)
@@ -53,15 +53,15 @@
     (let* ([group (substring in 0 5)]
            [part (substring group 1)])
       (cond
-        [(stop-p group) (result 'literal ver (reverse (cons part out)) (substring in 5))]
+        [(stop-p group) (result 'literal ver 'literal (reverse (cons part out)) (substring in 5))]
         [else (loop (substring in 5)
                     (cons part out))]))))
 
-(define (parse-op-by-len ver input len)
+(define (parse-op-by-len typ ver input len)
   (letrec ([A (lambda (input pass res)
                 (cond
                   [(= len pass)
-                   (result 'op-len ver (reverse res) input)]
+                   (result 'op-len ver typ (reverse res) input)]
                   [else (let ([r (parse-packet input)])
                           (A (result-remaining r)
                              (+ pass
@@ -69,11 +69,11 @@
                              (cons r res)))]))])
     (A input 0 '())))
 
-(define (parse-op-by-count ver input cnt)
+(define (parse-op-by-count typ ver input cnt)
   (letrec ([A (lambda (input pass res)
                 (cond
                   [(= cnt pass)
-                   (result 'op-cnt ver (reverse res) input)]
+                   (result 'op-cnt ver typ (reverse res) input)]
                   [else (let ([r (parse-packet input)])
                           (A (result-remaining r)
                              (add1 pass)
@@ -129,9 +129,15 @@
 
 (define (packet-type input)
   (let ([typ (substring (packet-header input) 3 6)])
-    (cond
-      [(string=? typ "100") 'literal]
-      [else 'op])))
+    (match typ
+      ["100" 'literal]
+      ["000" 'sum]
+      ["001" 'product]
+      ["010" 'minimum]
+      ["011" 'maximum]
+      ["101" 'gt]
+      ["110" 'lt]
+      ["111" 'eq])))
 
 (define (op-type input)
   (let ([c (string-ref input 0)])
@@ -186,3 +192,37 @@
   ;; (bits-to-decimal "0000000001000010")
   ;; (parse-packet "10100100000000010000100111111000000000100001001100001001010100011100111001111110111000111000001000000000010001000111100000")
   )
+
+(define (eval packet)
+  (match packet
+    [(result _ _ 'literal body _) (bits-to-decimal (for/fold ([r ""])
+                                                             ([l (in-list body)])
+                                                     (string-append r l)))]
+    [(result _ _ 'sum body _) (apply + (map eval body))]
+    [(result _ _ 'product body _) (apply * (map eval body))]
+    [(result _ _ 'minimum body _) (apply min (map eval body))]
+    [(result _ _ 'maximum body _) (apply max (map eval body))]
+    [(result _ _ 'gt body _) (if (apply > (map eval body)) 1 0)]
+    [(result _ _ 'lt body _) (if (apply < (map eval body)) 1 0)]
+    [(result _ _ 'eq body _) (if (apply = (map eval body)) 1 0)]))
+
+(module+ test
+  (eval (parse-packet (input-to-bin "C200B40A82")))
+  (eval (parse-packet (input-to-bin "04005AC33890")))
+  (eval (parse-packet (input-to-bin "880086C3E88112")))
+  (eval (parse-packet (input-to-bin "CE00C43D881120")))
+  (eval (parse-packet (input-to-bin "D8005AC2A8F0")))
+  (eval (parse-packet (input-to-bin "F600BC2D8F")))
+  (eval (parse-packet (input-to-bin "9C005AC2F8F0")))
+  (eval (parse-packet (input-to-bin "9C0141080250320F1802104A08")))
+  )
+
+(define (puzzle2 filename)
+  (define raw (call-with-input-file filename
+                (lambda (in)
+                  (read-line in))))
+  (eval (parse-packet (input-to-bin raw)))
+  )
+
+(module+ test
+  (puzzle2 "input1.txt"))
